@@ -13,6 +13,7 @@
 		177EADEB2D631DB100308A76 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 177EADEA2D631DB100308A76 /* Preview Assets.xcassets */; };
 		177EADED2D631DB100308A76 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADEC2D631DB100308A76 /* Persistence.swift */; };
 		177EADF02D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 177EADEE2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld */; };
+		177EADF72D631EC600308A76 /* Pokemon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADF62D631EC600308A76 /* Pokemon.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		177EADEA2D631DB100308A76 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		177EADEC2D631DB100308A76 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		177EADEF2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = REALSwiftPokeApp.xcdatamodel; sourceTree = "<group>"; };
+		177EADF62D631EC600308A76 /* Pokemon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pokemon.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 			children = (
 				177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */,
 				177EADE52D631DB000308A76 /* ContentView.swift */,
+				177EADF62D631EC600308A76 /* Pokemon.swift */,
 				177EADE72D631DB100308A76 /* Assets.xcassets */,
 				177EADEC2D631DB100308A76 /* Persistence.swift */,
 				177EADEE2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld */,
@@ -143,6 +146,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				177EADF72D631EC600308A76 /* Pokemon.swift in Sources */,
 				177EADED2D631DB100308A76 /* Persistence.swift in Sources */,
 				177EADE62D631DB000308A76 /* ContentView.swift in Sources */,
 				177EADF02D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld in Sources */,
