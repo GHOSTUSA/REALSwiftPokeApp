@@ -5,6 +5,7 @@ struct PokemonDetailView: View {
     var pokemon: Pokemon
     @Environment(\.managedObjectContext) private var viewContext
     @State private var isFavorite: Bool = false
+    @State private var scale: CGFloat = 1.0
 
     private func addFavorite() {
         let favoritePokemon = PokemonEntity(context: viewContext)
@@ -23,20 +24,28 @@ struct PokemonDetailView: View {
 
     var body: some View {
         VStack {
-            Text(pokemon.name.capitalized)
-                .font(.largeTitle)
-                .padding()
-            
-            // Affichage de l'image du Pokémon avec animation
-            AsyncImage(url: URL(string: pokemon.image)) { image in
-                image.resizable()
-            } placeholder: {
-                ProgressView()
-            }
-            .frame(width: 150, height: 150)
-            .clipShape(Circle())
-            .padding()
-            .transition(.scale) // Animation d'apparition de l'image
+                   Text(pokemon.name.capitalized)
+                       .font(.largeTitle)
+                       .padding()
+                   
+                   // Effet de zoom sur l'image
+                   AsyncImage(url: URL(string: pokemon.image)) { image in
+                       image.resizable()
+                   } placeholder: {
+                       ProgressView()
+                   }
+                   .frame(width: 150, height: 150)
+                   .clipShape(Circle())
+                   .padding()
+                   .scaleEffect(scale) // Appliquer l'effet de zoom
+                   .gesture(
+                       TapGesture()
+                           .onEnded {
+                               withAnimation(.spring()) { // Animation de zoom
+                                   scale = scale == 1.0 ? 1.9 : 1.0
+                               }
+                           }
+                   )
             
             // Affichage des types et des statistiques avec animation
             VStack(alignment: .leading) {

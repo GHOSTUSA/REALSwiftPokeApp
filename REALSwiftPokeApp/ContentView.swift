@@ -1,33 +1,5 @@
-//
-//  ContentView.swift
-//  REALSwiftPokeApp
-//
-//  Created by Ethan DAHI-GERMAIN on 2/17/25.
-//
-
 import SwiftUI
 import CoreData
-/*
-struct PokemonEntry: Codable, Identifiable {
-    var id: Int {
-        Int(url.split(separator: "/").last ?? "0") ?? 0
-    }
-    let name: String
-    let url: String
-    let types: String
-    
-    func toPokemon() -> Pokemon {
-        return Pokemon(
-            id: id,
-            name: name.capitalized,
-            image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(id).png",
-            types: [],
-            stats: Stats(hp: 0, attack: 0, defense: 0, speed: 0)
-        )
-    }
-}*/
-
-import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = PokemonViewModel()
@@ -56,12 +28,10 @@ struct ContentView: View {
         // Filtrer par type
         if let selectedType = selectedType {
             filteredPokemons = filteredPokemons.filter { pokemon in
-                //if let types = pokemon.types {
-                return pokemon.types.contains(selectedType)
-                //}
-                //return false
+                pokemon.types.contains(selectedType)
             }
         }
+        
         // Trier
         switch sortOption {
         case .alphabetical:
@@ -77,7 +47,6 @@ struct ContentView: View {
         return filteredPokemons
     }
 
-    
     var body: some View {
         NavigationView {
             VStack {
@@ -89,9 +58,9 @@ struct ContentView: View {
                 // Filtre par type
                 Picker("Filtrer par type", selection: $selectedType) {
                     Text("Tous").tag(nil as String?)
-                    Text("Feu").tag("feu")
-                    Text("Eau").tag("eau")
-                    Text("Plante").tag("plante")
+                    Text("Feu").tag("fire")
+                    Text("Eau").tag("water")
+                    Text("Plante").tag("grass")
                     // Ajouter d'autres types si nécessaire
                 }
                 .pickerStyle(MenuPickerStyle())
@@ -125,6 +94,7 @@ struct ContentView: View {
                         selectedPokemon = pokemon // Mettre à jour le Pokémon sélectionné
                         isSheetPresented.toggle() // Afficher la Sheet
                     }
+                    .transition(.scale) // Animation lors du changement dans la liste
                 }
                 .navigationTitle("Pokémon")
                 .onAppear {
@@ -140,7 +110,6 @@ struct ContentView: View {
                 }
             }
         }
+        .animation(.easeInOut, value: filteredAndSortedPokemons) // Animation lors de l'ajout/suppression des Pokémon
     }
 }
-
-

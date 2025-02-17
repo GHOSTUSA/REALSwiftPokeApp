@@ -9,16 +9,25 @@ import Foundation
 import SwiftUI
 import CoreData
 
-struct Pokemon {
-    let id: Int
-    let name: String
-    let image: String
-    let types: String // Rend les types optionnels
-    let stats: Stats
+struct Pokemon: Identifiable, Equatable {
+    var id: Int
+    var name: String
+    var image: String
+    var types: String // ou un tableau de chaînes, si tu préfères
+    var stats: Stats
+    
+    static func ==(lhs: Pokemon, rhs: Pokemon) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.name == rhs.name &&
+               lhs.image == rhs.image &&
+               lhs.types == rhs.types &&
+               lhs.stats == rhs.stats
+    }
 }
 
 
-struct Stats {
+
+struct Stats: Equatable {
     let hp: Int
     let attack: Int
     let defense: Int
