@@ -96,6 +96,15 @@ struct ContentView: View {
                     }
                     .transition(.scale) // Animation lors du changement dans la liste
                 }
+                
+                NavigationLink(destination: CombatView()) {
+                                    Text("Mode Combat")
+                                        .padding()
+                                        .background(Color.blue)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(8)
+                                }
+                                .padding()
                 .navigationTitle("Pokémon")
                 .onAppear {
                     Task {

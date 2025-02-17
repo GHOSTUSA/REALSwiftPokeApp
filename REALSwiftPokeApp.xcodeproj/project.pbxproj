@@ -18,6 +18,7 @@
 		177EADFE2D6328D200308A76 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADFD2D6328D200308A76 /* PersistenceController.swift */; };
 		177EAE012D632BAD00308A76 /*  PokemonModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 177EADFF2D632BAD00308A76 /*  PokemonModel.xcdatamodeld */; };
 		177EAE032D633BF200308A76 /* PokemonDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EAE022D633BF200308A76 /* PokemonDetailView.swift */; };
+		177EAE072D63783700308A76 /* CombatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EAE062D63783700308A76 /* CombatView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		177EADFD2D6328D200308A76 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		177EAE002D632BAD00308A76 /*  PokemonModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = " PokemonModel.xcdatamodel"; sourceTree = "<group>"; };
 		177EAE022D633BF200308A76 /* PokemonDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonDetailView.swift; sourceTree = "<group>"; };
+		177EAE062D63783700308A76 /* CombatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,7 @@
 				177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */,
 				177EAE022D633BF200308A76 /* PokemonDetailView.swift */,
 				177EADFB2D63288500308A76 /* PokemonViewModel.swift */,
+				177EAE062D63783700308A76 /* CombatView.swift */,
 				177EADE52D631DB000308A76 /* ContentView.swift */,
 				177EADF92D6327FA00308A76 /* PokemonEntity.swift */,
 				177EADFD2D6328D200308A76 /* PersistenceController.swift */,
@@ -163,6 +166,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				177EAE072D63783700308A76 /* CombatView.swift in Sources */,
 				177EADF72D631EC600308A76 /* Pokemon.swift in Sources */,
 				177EADFA2D6327FA00308A76 /* PokemonEntity.swift in Sources */,
 				177EAE032D633BF200308A76 /* PokemonDetailView.swift in Sources */,
