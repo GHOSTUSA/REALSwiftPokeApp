@@ -2,16 +2,16 @@ import CoreData
 import SwiftUI
 
 struct PokemonDetailView: View {
-    var pokemon: PokemonEntry
+    var pokemon: Pokemon
     @Environment(\.managedObjectContext) private var viewContext
     @State private var isFavorite: Bool = false
 
     private func addFavorite() {
         let favoritePokemon = PokemonEntity(context: viewContext)
         favoritePokemon.name = pokemon.name
-        favoritePokemon.image = pokemon.url
-        favoritePokemon.types = "Type(s) ici"
-        favoritePokemon.stats = "Stats ici"
+        favoritePokemon.image = pokemon.image
+        favoritePokemon.types = pokemon.types // Types déjà en string
+        favoritePokemon.stats = "HP: \(pokemon.stats.hp), Attaque: \(pokemon.stats.attack), Défense: \(pokemon.stats.defense), Vitesse: \(pokemon.stats.speed)"
         
         do {
             try viewContext.save()
@@ -28,7 +28,7 @@ struct PokemonDetailView: View {
                 .padding()
             
             // Affichage de l'image du Pokémon avec animation
-            AsyncImage(url: URL(string: pokemon.toPokemon().image)) { image in
+            AsyncImage(url: URL(string: pokemon.image)) { image in
                 image.resizable()
             } placeholder: {
                 ProgressView()
@@ -40,13 +40,15 @@ struct PokemonDetailView: View {
             
             // Affichage des types et des statistiques avec animation
             VStack(alignment: .leading) {
-                Text("Types: Feu, Eau") // Remplacer avec les types réels
+                Text("Types: \(pokemon.types)") // Types sous forme de chaîne
                     .padding()
+                
                 VStack(alignment: .leading) {
-                    Text("HP: 35")
-                    Text("Attaque: 55")
-                    Text("Défense: 40")
-                    Text("Vitesse: 90")
+                    // Assurer que stats sont des Int pour l'interpolation
+                    Text("HP: \(pokemon.stats.hp)")
+                    Text("Attaque: \(pokemon.stats.attack)")
+                    Text("Défense: \(pokemon.stats.defense)")
+                    Text("Vitesse: \(pokemon.stats.speed)")
                 }
                 .padding()
             }
@@ -70,4 +72,3 @@ struct PokemonDetailView: View {
         .animation(.default) // Animation de base pour la vue
     }
 }
-

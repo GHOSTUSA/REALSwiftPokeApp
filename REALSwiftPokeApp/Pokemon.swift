@@ -9,13 +9,14 @@ import Foundation
 import SwiftUI
 import CoreData
 
-struct Pokemon: Identifiable {
-    let id : Int
+struct Pokemon {
+    let id: Int
     let name: String
-    let image: String // Nom de l'image dans les assets ou URL
-    let types: [String] // Un Pokémon peut avoir plusieurs types
-    let stats: Stats // Structure pour les statistiques principales
+    let image: String
+    let types: String // Rend les types optionnels
+    let stats: Stats
 }
+
 
 struct Stats {
     let hp: Int

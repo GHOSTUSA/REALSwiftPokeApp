@@ -69,9 +69,9 @@
 			children = (
 				177EADF82D63257100308A76 /* Info.plist */,
 				177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */,
-				177EADE52D631DB000308A76 /* ContentView.swift */,
 				177EAE022D633BF200308A76 /* PokemonDetailView.swift */,
 				177EADFB2D63288500308A76 /* PokemonViewModel.swift */,
+				177EADE52D631DB000308A76 /* ContentView.swift */,
 				177EADF92D6327FA00308A76 /* PokemonEntity.swift */,
 				177EADFD2D6328D200308A76 /* PersistenceController.swift */,
 				177EADF62D631EC600308A76 /* Pokemon.swift */,
