@@ -2,16 +2,16 @@ import CoreData
 import SwiftUI
 
 struct PokemonDetailView: View {
-    var pokemon: Pokemon
+    var pokemon: PokemonEntry
     @Environment(\.managedObjectContext) private var viewContext
     @State private var isFavorite: Bool = false
 
     private func addFavorite() {
         let favoritePokemon = PokemonEntity(context: viewContext)
         favoritePokemon.name = pokemon.name
-        favoritePokemon.image = pokemon.image
-        favoritePokemon.types = pokemon.types.joined(separator: ", ") // Convertir les types en une chaîne
-        favoritePokemon.stats = "HP: \(pokemon.stats.hp), Attaque: \(pokemon.stats.attack), Défense: \(pokemon.stats.defense), Vitesse: \(pokemon.stats.speed)"
+        favoritePokemon.image = pokemon.url
+        favoritePokemon.types = "Type(s) ici"
+        favoritePokemon.stats = "Stats ici"
         
         do {
             try viewContext.save()
@@ -27,8 +27,8 @@ struct PokemonDetailView: View {
                 .font(.largeTitle)
                 .padding()
             
-            // Affichage de l'image du Pokémon
-            AsyncImage(url: URL(string: pokemon.image)) { image in
+            // Affichage de l'image du Pokémon avec animation
+            AsyncImage(url: URL(string: pokemon.toPokemon().image)) { image in
                 image.resizable()
             } placeholder: {
                 ProgressView()
@@ -36,21 +36,22 @@ struct PokemonDetailView: View {
             .frame(width: 150, height: 150)
             .clipShape(Circle())
             .padding()
+            .transition(.scale) // Animation d'apparition de l'image
             
-            // Affichage des types du Pokémon
-            Text("Types: \(pokemon.types.joined(separator: ", "))")
-                .padding()
-            
-            // Affichage des statistiques
+            // Affichage des types et des statistiques avec animation
             VStack(alignment: .leading) {
-                Text("HP: \(pokemon.stats.hp)")
-                Text("Attaque: \(pokemon.stats.attack)")
-                Text("Défense: \(pokemon.stats.defense)")
-                Text("Vitesse: \(pokemon.stats.speed)")
+                Text("Types: Feu, Eau") // Remplacer avec les types réels
+                    .padding()
+                VStack(alignment: .leading) {
+                    Text("HP: 35")
+                    Text("Attaque: 55")
+                    Text("Défense: 40")
+                    Text("Vitesse: 90")
+                }
+                .padding()
             }
-            .padding()
+            .transition(.opacity) // Animation des informations
             
-            // Bouton pour ajouter aux favoris
             Button(action: addFavorite) {
                 Text(isFavorite ? "Ajouté aux favoris" : "Ajouter aux favoris")
                     .padding()
@@ -64,5 +65,9 @@ struct PokemonDetailView: View {
             Spacer()
         }
         .padding()
+        .navigationBarBackButtonHidden(false) // Assure-toi que le bouton retour est visible
+        .navigationTitle(pokemon.name.capitalized) // Titre du détail Pokémon
+        .animation(.default) // Animation de base pour la vue
     }
 }
+
