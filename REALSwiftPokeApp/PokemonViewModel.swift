@@ -26,13 +26,20 @@ struct PokemonTypeName: Codable {
 }
 
 struct PokemonStat: Codable {
-    let stat: PokemonStatName
     let baseStat: Int
+    let stat: PokemonStatName
+    
+    enum CodingKeys: String, CodingKey {
+        case baseStat = "base_stat"  // Le nom correct du champ dans l'API est "base_stat"
+        case stat
+    }
 }
+
 
 struct PokemonStatName: Codable {
     let name: String
 }
+
 
 
 
@@ -61,7 +68,7 @@ class PokemonViewModel: ObservableObject {
         }
     }
 
-    // Récupérer les détails d'un Pokémon
+    // Récupérer les détails d'un Pokémon à partir de l'URL
     func fetchPokemonDetails(for pokemon: PokemonEntry) async {
         let pokemonDetailsURL = pokemon.url
         guard let url = URL(string: pokemonDetailsURL) else {
@@ -73,13 +80,13 @@ class PokemonViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: url)
             let decodedPokemon = try JSONDecoder().decode(PokemonDetail.self, from: data)
 
-            // Mise à jour du Pokémon sélectionné avec ses détails
+            // Mettre à jour l'objet sélectionné avec ses détails
             DispatchQueue.main.async {
                 self.selectedPokemon = Pokemon(
                     id: pokemon.id,
                     name: pokemon.name.capitalized,
                     image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(pokemon.id).png",
-                    types: decodedPokemon.types.map { $0.type.name }, // Extrait des types
+                    types: decodedPokemon.types.map { $0.type.name },  // Types des Pokémon
                     stats: Stats(
                         hp: decodedPokemon.stats.first(where: { $0.stat.name == "hp" })?.baseStat ?? 0,
                         attack: decodedPokemon.stats.first(where: { $0.stat.name == "attack" })?.baseStat ?? 0,
@@ -92,6 +99,8 @@ class PokemonViewModel: ObservableObject {
             print("Erreur lors de la récupération des détails du Pokémon : \(error)")
         }
     }
+
+
 
 
     

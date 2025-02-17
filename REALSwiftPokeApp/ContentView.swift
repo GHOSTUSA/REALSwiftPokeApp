@@ -35,7 +35,7 @@ struct ContentView: View {
         NavigationView {
             List(viewModel.pokemons) { pokemon in
                 HStack {
-                    // Utilisation de l'image générée par toPokemon()
+                    // Afficher l'image du Pokémon
                     AsyncImage(url: URL(string: pokemon.toPokemon().image)) { image in
                         image.resizable()
                     } placeholder: {
@@ -49,6 +49,9 @@ struct ContentView: View {
                 }
                 .onTapGesture {
                     selectedPokemon = pokemon // Mettre à jour le Pokémon sélectionné
+                    Task {
+                        await viewModel.fetchPokemonDetails(for: pokemon) // Récupérer les détails à partir de l'URL
+                    }
                     isSheetPresented.toggle() // Afficher la Sheet
                 }
             }
@@ -57,12 +60,13 @@ struct ContentView: View {
                 await viewModel.fetchPokemons()
             }
             .sheet(isPresented: $isSheetPresented) {
-                if let selectedPokemon = selectedPokemon {
-                    PokemonDetailView(pokemon: selectedPokemon.toPokemon()) // Passer le Pokémon sélectionné à la Sheet
+                if let selectedPokemon = viewModel.selectedPokemon {
+                    PokemonDetailView(pokemon: selectedPokemon) // Passer le Pokémon sélectionné à la Sheet
                 }
             }
         }
     }
 }
+
 
 

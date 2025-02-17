@@ -10,7 +10,7 @@ struct PokemonDetailView: View {
         let favoritePokemon = PokemonEntity(context: viewContext)
         favoritePokemon.name = pokemon.name
         favoritePokemon.image = pokemon.image
-        favoritePokemon.types = pokemon.types.joined(separator: ", ") // Types séparés par des virgules
+        favoritePokemon.types = pokemon.types.joined(separator: ", ") // Convertir les types en une chaîne
         favoritePokemon.stats = "HP: \(pokemon.stats.hp), Attaque: \(pokemon.stats.attack), Défense: \(pokemon.stats.defense), Vitesse: \(pokemon.stats.speed)"
         
         do {
@@ -27,6 +27,7 @@ struct PokemonDetailView: View {
                 .font(.largeTitle)
                 .padding()
             
+            // Affichage de l'image du Pokémon
             AsyncImage(url: URL(string: pokemon.image)) { image in
                 image.resizable()
             } placeholder: {
@@ -36,9 +37,11 @@ struct PokemonDetailView: View {
             .clipShape(Circle())
             .padding()
             
+            // Affichage des types du Pokémon
             Text("Types: \(pokemon.types.joined(separator: ", "))")
                 .padding()
             
+            // Affichage des statistiques
             VStack(alignment: .leading) {
                 Text("HP: \(pokemon.stats.hp)")
                 Text("Attaque: \(pokemon.stats.attack)")
@@ -47,6 +50,7 @@ struct PokemonDetailView: View {
             }
             .padding()
             
+            // Bouton pour ajouter aux favoris
             Button(action: addFavorite) {
                 Text(isFavorite ? "Ajouté aux favoris" : "Ajouter aux favoris")
                     .padding()
