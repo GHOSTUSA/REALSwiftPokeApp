@@ -11,9 +11,12 @@
 		177EADE62D631DB000308A76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADE52D631DB000308A76 /* ContentView.swift */; };
 		177EADE82D631DB100308A76 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 177EADE72D631DB100308A76 /* Assets.xcassets */; };
 		177EADEB2D631DB100308A76 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 177EADEA2D631DB100308A76 /* Preview Assets.xcassets */; };
-		177EADED2D631DB100308A76 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADEC2D631DB100308A76 /* Persistence.swift */; };
 		177EADF02D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 177EADEE2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld */; };
 		177EADF72D631EC600308A76 /* Pokemon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADF62D631EC600308A76 /* Pokemon.swift */; };
+		177EADFA2D6327FA00308A76 /* PokemonEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADF92D6327FA00308A76 /* PokemonEntity.swift */; };
+		177EADFC2D63288600308A76 /* PokemonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADFB2D63288500308A76 /* PokemonViewModel.swift */; };
+		177EADFE2D6328D200308A76 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADFD2D6328D200308A76 /* PersistenceController.swift */; };
+		177EAE012D632BAD00308A76 /*  PokemonModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 177EADFF2D632BAD00308A76 /*  PokemonModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,9 +25,13 @@
 		177EADE52D631DB000308A76 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		177EADE72D631DB100308A76 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		177EADEA2D631DB100308A76 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		177EADEC2D631DB100308A76 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		177EADEF2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = REALSwiftPokeApp.xcdatamodel; sourceTree = "<group>"; };
 		177EADF62D631EC600308A76 /* Pokemon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pokemon.swift; sourceTree = "<group>"; };
+		177EADF82D63257100308A76 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		177EADF92D6327FA00308A76 /* PokemonEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonEntity.swift; sourceTree = "<group>"; };
+		177EADFB2D63288500308A76 /* PokemonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonViewModel.swift; sourceTree = "<group>"; };
+		177EADFD2D6328D200308A76 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		177EAE002D632BAD00308A76 /*  PokemonModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = " PokemonModel.xcdatamodel"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +48,7 @@
 		177EADD72D631DAF00308A76 = {
 			isa = PBXGroup;
 			children = (
+				177EADFF2D632BAD00308A76 /*  PokemonModel.xcdatamodeld */,
 				177EADE22D631DB000308A76 /* REALSwiftPokeApp */,
 				177EADE12D631DB000308A76 /* Products */,
 			);
@@ -57,11 +65,14 @@
 		177EADE22D631DB000308A76 /* REALSwiftPokeApp */ = {
 			isa = PBXGroup;
 			children = (
+				177EADF82D63257100308A76 /* Info.plist */,
 				177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */,
 				177EADE52D631DB000308A76 /* ContentView.swift */,
+				177EADFB2D63288500308A76 /* PokemonViewModel.swift */,
+				177EADF92D6327FA00308A76 /* PokemonEntity.swift */,
+				177EADFD2D6328D200308A76 /* PersistenceController.swift */,
 				177EADF62D631EC600308A76 /* Pokemon.swift */,
 				177EADE72D631DB100308A76 /* Assets.xcassets */,
-				177EADEC2D631DB100308A76 /* Persistence.swift */,
 				177EADEE2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld */,
 				177EADE92D631DB100308A76 /* Preview Content */,
 			);
@@ -103,6 +114,9 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				KnownAssetTags = (
+					New,
+				);
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
@@ -147,10 +161,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				177EADF72D631EC600308A76 /* Pokemon.swift in Sources */,
-				177EADED2D631DB100308A76 /* Persistence.swift in Sources */,
+				177EADFA2D6327FA00308A76 /* PokemonEntity.swift in Sources */,
+				177EADFC2D63288600308A76 /* PokemonViewModel.swift in Sources */,
 				177EADE62D631DB000308A76 /* ContentView.swift in Sources */,
+				177EAE012D632BAD00308A76 /*  PokemonModel.xcdatamodeld in Sources */,
 				177EADF02D631DB100308A76 /* REALSwiftPokeApp.xcdatamodeld in Sources */,
 				177EADE42D631DB000308A76 /* REALSwiftPokeAppApp.swift in Sources */,
+				177EADFE2D6328D200308A76 /* PersistenceController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +303,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"REALSwiftPokeApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = REALSwiftPokeApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -314,6 +332,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"REALSwiftPokeApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = REALSwiftPokeApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -363,6 +382,16 @@
 			);
 			currentVersion = 177EADEF2D631DB100308A76 /* REALSwiftPokeApp.xcdatamodel */;
 			path = REALSwiftPokeApp.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+		177EADFF2D632BAD00308A76 /*  PokemonModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				177EAE002D632BAD00308A76 /*  PokemonModel.xcdatamodel */,
+			);
+			currentVersion = 177EAE002D632BAD00308A76 /*  PokemonModel.xcdatamodel */;
+			path = " PokemonModel.xcdatamodeld";
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
