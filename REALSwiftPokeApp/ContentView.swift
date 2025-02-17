@@ -8,7 +8,8 @@ struct ContentView: View {
     @State private var sortOption: SortOption = .alphabetical // Pour le tri
     @State private var isSheetPresented = false
     @State private var selectedPokemon: Pokemon? = nil // Pokémon sélectionné pour afficher la Sheet
-    
+    @State private var showOnlyFavorites: Bool = false // Afficher uniquement les favoris
+
     // Enums pour le tri
     enum SortOption {
         case alphabetical
@@ -30,6 +31,11 @@ struct ContentView: View {
             filteredPokemons = filteredPokemons.filter { pokemon in
                 pokemon.types.contains(selectedType)
             }
+        }
+        
+        // Filtrer les favoris si nécessaire
+        if showOnlyFavorites {
+            filteredPokemons = filteredPokemons.filter { $0.isFavorite }
         }
         
         // Trier
@@ -64,7 +70,6 @@ struct ContentView: View {
                     // Ajouter d'autres types si nécessaire
                 }
                 .pickerStyle(MenuPickerStyle())
-                .padding()
                 
                 // Options de tri
                 Picker("Trier par", selection: $sortOption) {
@@ -75,6 +80,10 @@ struct ContentView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
+                
+                // Option pour afficher uniquement les favoris
+                Toggle("Afficher les favoris seulement", isOn: $showOnlyFavorites)
+                    .padding()
                 
                 // Liste des Pokémon filtrés et triés
                 List(filteredAndSortedPokemons, id: \.id) { pokemon in
@@ -89,6 +98,16 @@ struct ContentView: View {
                         
                         Text(pokemon.name.capitalized)
                             .font(.headline)
+                        
+                        Spacer()
+                        
+                        // Bouton de favori (un cœur)
+                        Button(action: {
+                            toggleFavorite(pokemon: pokemon)
+                        }) {
+                            Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
+                                .foregroundColor(pokemon.isFavorite ? .red : .gray)
+                        }
                     }
                     .onTapGesture {
                         selectedPokemon = pokemon // Mettre à jour le Pokémon sélectionné
@@ -97,14 +116,14 @@ struct ContentView: View {
                     .transition(.scale) // Animation lors du changement dans la liste
                 }
                 
+                // Bouton de mode combat
                 NavigationLink(destination: CombatView()) {
-                                    Text("Mode Combat")
-                                        .padding()
-                                        .background(Color.blue)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(8)
-                                }
-                                .padding()
+                    Text("Mode Combat")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
                 .navigationTitle("Pokémon")
                 .onAppear {
                     Task {
@@ -112,6 +131,7 @@ struct ContentView: View {
                     }
                 }
 
+                // Affichage de la feuille de détails du Pokémon
                 .sheet(isPresented: $isSheetPresented) {
                     if let selectedPokemon = selectedPokemon {
                         PokemonDetailView(pokemon: selectedPokemon) // Passer le Pokémon sélectionné à la Sheet
@@ -121,4 +141,13 @@ struct ContentView: View {
         }
         .animation(.easeInOut, value: filteredAndSortedPokemons) // Animation lors de l'ajout/suppression des Pokémon
     }
+    
+    // Fonction pour ajouter/retirer un Pokémon des favoris
+    private func toggleFavorite(pokemon: Pokemon) {
+        if let index = viewModel.pokemons.firstIndex(where: { $0.id == pokemon.id }) {
+            // Modifie l'état de isFavorite dans la liste des Pokémon
+            viewModel.pokemons[index].isFavorite.toggle()
+        }
+    }
 }
+

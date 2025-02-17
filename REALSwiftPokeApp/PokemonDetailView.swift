@@ -12,7 +12,10 @@ struct PokemonDetailView: View {
         favoritePokemon.name = pokemon.name
         favoritePokemon.image = pokemon.image
         favoritePokemon.types = pokemon.types // Types déjà en string
-        favoritePokemon.stats = "HP: \(pokemon.stats.hp), Attaque: \(pokemon.stats.attack), Défense: \(pokemon.stats.defense), Vitesse: \(pokemon.stats.speed)"
+        favoritePokemon.hp = pokemon.stats.hp
+        favoritePokemon.attack = pokemon.stats.attack
+        favoritePokemon.defense = pokemon.stats.defense
+        favoritePokemon.speed = pokemon.stats.speed
         
         do {
             try viewContext.save()

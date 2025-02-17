@@ -15,21 +15,23 @@ struct Pokemon: Identifiable, Equatable {
     var image: String
     var types: String // ou un tableau de chaînes, si tu préfères
     var stats: Stats
+    var isFavorite: Bool
     
     static func ==(lhs: Pokemon, rhs: Pokemon) -> Bool {
         return lhs.id == rhs.id &&
                lhs.name == rhs.name &&
                lhs.image == rhs.image &&
                lhs.types == rhs.types &&
-               lhs.stats == rhs.stats
+               lhs.stats == rhs.stats &&
+        lhs.isFavorite == rhs.isFavorite
     }
 }
 
 
 
 struct Stats: Equatable {
-    let hp: Int
-    let attack: Int
-    let defense: Int
-    let speed: Int
+    let hp: Int64
+    let attack: Int64
+    let defense: Int64
+    let speed: Int64
 }

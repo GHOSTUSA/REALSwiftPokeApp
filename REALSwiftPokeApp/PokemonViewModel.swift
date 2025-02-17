@@ -21,7 +21,7 @@ struct PokemonTypeName: Codable {
 }
 
 struct PokemonStat: Codable {
-    let baseStat: Int
+    let baseStat: Int64
     let stat: PokemonStatName
     
     enum CodingKeys: String, CodingKey {
@@ -41,6 +41,11 @@ class PokemonViewModel: ObservableObject {
     
     // Récupérer la liste des Pokémon + leurs détails en parallèle
     func fetchPokemonsWithDetails() async {
+        // Vérifier si les Pokémon sont déjà dans Core Data
+        if loadFromCoreData() {
+            return // Si déjà chargés, ne pas faire de nouvelle requête API
+        }
+
         guard let url = URL(string: "https://pokeapi.co/api/v2/pokemon?limit=151") else {
             print("URL invalide")
             return
@@ -70,10 +75,10 @@ class PokemonViewModel: ObservableObject {
                 return results
             }
 
-            // Mise à jour de l'UI
+            // Mise à jour de l'UI sur le thread principal
             DispatchQueue.main.async {
                 self.pokemons = detailedPokemons
-                self.saveToCoreData()
+                self.saveToCoreData() // Sauvegarder dans Core Data après récupération
             }
 
         } catch {
@@ -102,7 +107,8 @@ class PokemonViewModel: ObservableObject {
                     attack: decodedPokemon.stats.first(where: { $0.stat.name == "attack" })?.baseStat ?? 0,
                     defense: decodedPokemon.stats.first(where: { $0.stat.name == "defense" })?.baseStat ?? 0,
                     speed: decodedPokemon.stats.first(where: { $0.stat.name == "speed" })?.baseStat ?? 0
-                )
+                ),
+                isFavorite: false
             )
 
         } catch {
@@ -114,27 +120,62 @@ class PokemonViewModel: ObservableObject {
     // Sauvegarde dans Core Data
     private func saveToCoreData() {
         for pokemon in pokemons {
-            let entity = PokemonEntity(context: context)
-            entity.name = pokemon.name
-            entity.image = pokemon.image
-            entity.types = pokemon.types
+            // Vérifier si ce Pokémon existe déjà dans Core Data
+            let fetchRequest: NSFetchRequest<PokemonEntity> = PokemonEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %d", pokemon.id)
+            do {
+                let existingPokemons = try context.fetch(fetchRequest)
+                if existingPokemons.isEmpty {
+                    // Si le Pokémon n'existe pas, on le crée
+                    let entity = PokemonEntity(context: context)
+                    entity.id = Int64(pokemon.id)
+                    entity.name = pokemon.name
+                    entity.image = pokemon.image
+                    entity.types = pokemon.types
+                    entity.isFavorite = pokemon.isFavorite
+                    entity.hp = Int64(pokemon.stats.hp)
+                    entity.attack = Int64(pokemon.stats.attack)
+                    entity.defense = Int64(pokemon.stats.defense)
+                    entity.speed = Int64(pokemon.stats.speed)
+                }
+            } catch {
+                print("Erreur lors de la vérification ou sauvegarde du Pokémon dans CoreData: \(error)")
+            }
         }
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("Erreur lors de la sauvegarde dans CoreData: \(error)")
+        }
     }
 
     // Charger depuis Core Data
     private func loadFromCoreData() -> Bool {
         let request: NSFetchRequest<PokemonEntity> = PokemonEntity.fetchRequest()
-        if let results = try? context.fetch(request), !results.isEmpty {
-            self.pokemons = results.map { Pokemon(
-                id: Int($0.id),
-                name: $0.name ?? "Inconnu",
-                image: $0.image ?? "",
-                types: $0.types ?? "",
-                stats: Stats(hp: 0, attack: 0, defense: 0, speed: 0)
-            )}
-            return true
+        do {
+            let results = try context.fetch(request)
+            if !results.isEmpty {
+                self.pokemons = results.map { entity in
+                    return Pokemon(
+                        id: Int(entity.id),
+                        name: entity.name ?? "Inconnu",
+                        image: entity.image ?? "",
+                        types: entity.types ?? "",
+                        stats: Stats(
+                            hp: Int64(entity.hp),
+                            attack: Int64(entity.attack),
+                            defense: Int64(entity.defense),
+                            speed: Int64(entity.speed)
+                        ),
+                        isFavorite: entity.isFavorite
+                    )
+                }
+                return true
+            }
+        } catch {
+            print("Erreur lors du chargement depuis CoreData: \(error)")
         }
         return false
     }
 }
+

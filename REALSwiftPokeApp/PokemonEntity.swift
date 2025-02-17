@@ -14,8 +14,8 @@ struct PokemonEntry: Codable, Identifiable {
     let name: String
     let url: String
 
-    
-    func toPokemon(with details: PokemonDetail) -> Pokemon {
+    // La fonction de transformation avec les détails
+    func toPokemon(with details: PokemonDetail, isFavorite: Bool = false) -> Pokemon {
         return Pokemon(
             id: id,
             name: name.capitalized,
@@ -26,7 +26,8 @@ struct PokemonEntry: Codable, Identifiable {
                 attack: details.stats.first(where: { $0.stat.name == "attack" })?.baseStat ?? 0,
                 defense: details.stats.first(where: { $0.stat.name == "defense" })?.baseStat ?? 0,
                 speed: details.stats.first(where: { $0.stat.name == "speed" })?.baseStat ?? 0
-            )
+            ),
+            isFavorite: isFavorite // Ajouter le paramètre de favori ici
         )
     }
 }
