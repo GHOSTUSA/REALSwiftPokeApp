@@ -28,12 +28,15 @@ struct PokemonEntry: Codable, Identifiable {
 
 struct ContentView: View {
     @StateObject private var viewModel = PokemonViewModel()
+    @State private var selectedPokemon: PokemonEntry? = nil // Pokémon sélectionné pour afficher la Sheet
+    @State private var isSheetPresented = false
     
     var body: some View {
         NavigationView {
-            List(viewModel.pokemons.map { $0.toPokemon() }) { pokemon in
+            List(viewModel.pokemons) { pokemon in
                 HStack {
-                    AsyncImage(url: URL(string: pokemon.image)) { image in
+                    // Utilisation de l'image générée par toPokemon()
+                    AsyncImage(url: URL(string: pokemon.toPokemon().image)) { image in
                         image.resizable()
                     } placeholder: {
                         ProgressView()
@@ -41,14 +44,25 @@ struct ContentView: View {
                     .frame(width: 50, height: 50)
                     .clipShape(Circle())
                     
-                    Text(pokemon.name)
+                    Text(pokemon.name.capitalized)
                         .font(.headline)
+                }
+                .onTapGesture {
+                    selectedPokemon = pokemon // Mettre à jour le Pokémon sélectionné
+                    isSheetPresented.toggle() // Afficher la Sheet
                 }
             }
             .navigationTitle("Pokémon")
             .task {
                 await viewModel.fetchPokemons()
             }
+            .sheet(isPresented: $isSheetPresented) {
+                if let selectedPokemon = selectedPokemon {
+                    PokemonDetailView(pokemon: selectedPokemon.toPokemon()) // Passer le Pokémon sélectionné à la Sheet
+                }
+            }
         }
     }
 }
+
+
