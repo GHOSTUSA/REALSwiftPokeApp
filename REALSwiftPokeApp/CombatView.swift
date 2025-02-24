@@ -6,89 +6,248 @@ struct CombatView: View {
     @State private var selectedPokemon: Pokemon? = nil
     @State private var randomOpponent: Pokemon? = nil
     @State private var combatResult: String = ""
-    @State private var showFavoritesOnly: Bool = false  // Pour afficher uniquement les favoris
+    @State private var showFavoritesOnly: Bool = false
+    
+    // États pour les animations
+    @State private var selectedPokemonOffset: CGFloat = -100
+    @State private var selectedPokemonOpacity: Double = 0
+    @State private var opponentOffset: CGFloat = 100
+    @State private var opponentOpacity: Double = 0
+    @State private var listScale: CGFloat = 0.9
+    @State private var listOpacity: Double = 0
+    @State private var resultScale: CGFloat = 0.8
+    @State private var resultOpacity: Double = 0
+    @State private var buttonOffset: CGFloat = 50
+    @State private var buttonOpacity: Double = 0
+    
+    // Animation du combat
+    @State private var isAnimatingCombat: Bool = false
+    @State private var pokemonScale: CGFloat = 1.0
+    
+    private func startAnimations() {
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            selectedPokemonOffset = 0
+            selectedPokemonOpacity = 1
+        }
+        
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2)) {
+            opponentOffset = 0
+            opponentOpacity = 1
+        }
+        
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.3)) {
+            listScale = 1
+            listOpacity = 1
+        }
+        
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.4)) {
+            buttonOffset = 0
+            buttonOpacity = 1
+        }
+    }
     
     var body: some View {
-        NavigationView {
-            VStack {
-                // Affichage des Pokémon sélectionnés et de l'adversaire
-                VStack {
-                    if let selectedPokemon = selectedPokemon {
-                        HStack {
-                            Text("Votre Pokémon : ")
-                                .font(.body)
-                            Text(selectedPokemon.name.capitalized)
-                                .font(.title)
-                        }
-                    }
-                    
-                    if let randomOpponent = randomOpponent {
-                        Text("Adversaire : \(randomOpponent.name.capitalized)")
-                            .font(.title2)
-                            .padding()
+        ZStack {
+            // Arrière-plan avec gradient
+            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.2), Color.purple.opacity(0.1)]),
+                         startPoint: .topLeading,
+                         endPoint: .bottomTrailing)
+                .edgesIgnoringSafeArea(.all)
+            
+            VStack(spacing: 20) {
+                // Section du Pokémon sélectionné
+                if let selectedPokemon = selectedPokemon {
+                    VStack(spacing: 15) {
+                        Text("Votre Pokémon")
+                            .font(.headline)
+                            .foregroundColor(.gray)
                         
-                        AsyncImage(url: URL(string: randomOpponent.image)) { image in
-                            image.resizable()
-                                .scaledToFit()
-                                .frame(width: 100, height: 100)
-                        } placeholder: {
-                            ProgressView()
+                        HStack(spacing: 20) {
+                            AsyncImage(url: URL(string: selectedPokemon.image)) { image in
+                                image.resizable()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.blue, lineWidth: 2))
+                            .scaleEffect(isAnimatingCombat ? 1.2 : 1.0)
+                            
+                            VStack(alignment: .leading) {
+                                Text(selectedPokemon.name.capitalized)
+                                    .font(.title2)
+                                    .bold()
+                                
+                                HStack {
+                                    ForEach(selectedPokemon.types.split(separator: ","), id: \.self) { type in
+                                        Text(String(type).capitalized)
+                                            .font(.caption)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(typeColor(for: String(type)))
+                                            .foregroundColor(.white)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
                         }
+                        .padding()
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(15)
+                        .shadow(radius: 5)
                     }
+                    .offset(x: selectedPokemonOffset)
+                    .opacity(selectedPokemonOpacity)
                 }
-                .padding()
                 
-                // Liste des Pokémon à choisir, avec option de filtrer par favoris
+                // Section de l'adversaire
+                if let opponent = randomOpponent {
+                    VStack(spacing: 15) {
+                        Text("Adversaire")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                        
+                        HStack(spacing: 20) {
+                            AsyncImage(url: URL(string: opponent.image)) { image in
+                                image.resizable()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.red, lineWidth: 2))
+                            .scaleEffect(isAnimatingCombat ? 1.2 : 1.0)
+                            
+                            VStack(alignment: .leading) {
+                                Text(opponent.name.capitalized)
+                                    .font(.title2)
+                                    .bold()
+                                
+                                HStack {
+                                    ForEach(opponent.types.split(separator: ","), id: \.self) { type in
+                                        Text(String(type).capitalized)
+                                            .font(.caption)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(typeColor(for: String(type)))
+                                            .foregroundColor(.white)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(15)
+                        .shadow(radius: 5)
+                    }
+                    .offset(x: opponentOffset)
+                    .opacity(opponentOpacity)
+                }
+                
+                // Section de sélection des Pokémon
                 VStack {
                     Toggle(isOn: $showFavoritesOnly) {
-                        Text("Afficher les favoris uniquement")
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                            Text("Pokémon favoris uniquement")
+                        }
                     }
                     .padding()
+                    .background(Color.white.opacity(0.1))
+                    .cornerRadius(10)
                     
                     List(filteredPokemons, id: \.id) { pokemon in
                         HStack {
+                            AsyncImage(url: URL(string: pokemon.image)) { image in
+                                image.resizable()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                            
                             Text(pokemon.name.capitalized)
+                                .font(.headline)
+                            
                             Spacer()
                             
-                            // Bouton de favori avec cœur
                             Button(action: {
-                                toggleFavorite(pokemon: pokemon) // Appel de toggleFavorite ici
+                                withAnimation {
+                                    toggleFavorite(pokemon: pokemon)
+                                }
                             }) {
                                 Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
                                     .foregroundColor(pokemon.isFavorite ? .red : .gray)
                             }
-                            .buttonStyle(PlainButtonStyle())  // Pour éviter les effets visuels par défaut du bouton
                         }
+                        .padding(.vertical, 5)
+                        .contentShape(Rectangle())
                         .onTapGesture {
-                            selectedPokemon = pokemon
+                            withAnimation {
+                                selectedPokemon = pokemon
+                            }
                         }
                     }
+                    .listStyle(PlainListStyle())
                 }
-
+                .scaleEffect(listScale)
+                .opacity(listOpacity)
                 
-                // Affichage du résultat du combat et bouton pour lancer
-                Spacer()
+                // Résultat du combat
                 if !combatResult.isEmpty {
                     Text(combatResult)
-                        .font(.headline)
+                        .font(.title2)
+                        .bold()
                         .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(15)
+                        .scaleEffect(resultScale)
+                        .opacity(resultOpacity)
                 }
                 
+                // Bouton de combat
                 if selectedPokemon != nil {
-                    Button("Lancer le combat") {
-                        startCombat()
+                    Button(action: {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                            isAnimatingCombat = true
+                            startCombat()
+                        }
+                        
+                        // Réinitialiser l'animation après un délai
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                            withAnimation {
+                                isAnimatingCombat = false
+                            }
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "bolt.fill")
+                            Text("Lancer le combat")
+                                .font(.headline)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(LinearGradient(gradient: Gradient(colors: [.blue, .purple]),
+                                                 startPoint: .leading,
+                                                 endPoint: .trailing))
+                        .foregroundColor(.white)
+                        .cornerRadius(15)
+                        .shadow(radius: 5)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .offset(y: buttonOffset)
+                    .opacity(buttonOpacity)
                 }
             }
-            .onAppear {
-                Task {
-                    await viewModel.fetchPokemonsWithDetails()
-                }
+            .padding()
+        }
+        .navigationTitle("Mode Combat")
+        .onAppear {
+            Task {
+                await viewModel.fetchPokemonsWithDetails()
+                startAnimations()
             }
         }
     }
@@ -104,7 +263,6 @@ struct CombatView: View {
     private func toggleFavorite(pokemon: Pokemon) {
         viewModel.toggleFavorite(pokemon: pokemon)
     }
-
     
     private func startCombat() {
         guard let selectedPokemon = selectedPokemon else { return }
@@ -112,7 +270,13 @@ struct CombatView: View {
         
         if let opponent = randomOpponent {
             let winner = battleResult(player: selectedPokemon, opponent: opponent)
-            combatResult = "\(winner.name) gagne !"
+            
+            // Animation du résultat
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                combatResult = "\(winner.name.capitalized) remporte le combat!"
+                resultScale = 1
+                resultOpacity = 1
+            }
         }
     }
     

@@ -4,12 +4,20 @@ import CoreData
 struct PokemonDetailView: View {
     @Binding var pokemon: Pokemon?
     @Environment(\.managedObjectContext) private var viewContext
-    @ObservedObject private var viewModel: PokemonViewModel  // Ajout du ViewModel
+    @ObservedObject private var viewModel: PokemonViewModel
     @State private var scale: CGFloat = 1.0
-    @State private var opacity: Double = 0  // Pour l'animation de fade
-    @State private var offset: CGFloat = 50 // Pour l'animation de slide
     
-    // Initialisation avec le ViewModel
+    // États pour les animations
+    @State private var titleOpacity: Double = 0
+    @State private var imageScale: CGFloat = 0.5
+    @State private var imageOpacity: Double = 0
+    @State private var typesOffset: CGFloat = 100
+    @State private var typesOpacity: Double = 0
+    @State private var statsOffset: CGFloat = 100
+    @State private var statsOpacity: Double = 0
+    @State private var buttonScale: CGFloat = 0.8
+    @State private var buttonOpacity: Double = 0
+    
     init(pokemon: Binding<Pokemon?>, viewModel: PokemonViewModel) {
         self._pokemon = pokemon
         self.viewModel = viewModel
@@ -17,7 +25,38 @@ struct PokemonDetailView: View {
     
     private func toggleFavorite() {
         guard let pokemon = pokemon else { return }
-        viewModel.toggleFavorite(pokemon: pokemon)  // Utiliser le ViewModel
+        viewModel.toggleFavorite(pokemon: pokemon)
+    }
+    
+    private func startAnimations() {
+        // Animation du titre
+        withAnimation(.easeOut(duration: 0.6)) {
+            titleOpacity = 1
+        }
+        
+        // Animation de l'image
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.6).delay(0.3)) {
+            imageScale = 1.0
+            imageOpacity = 1
+        }
+        
+        // Animation des types
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.5)) {
+            typesOffset = 0
+            typesOpacity = 1
+        }
+        
+        // Animation des stats
+        withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.7)) {
+            statsOffset = 0
+            statsOpacity = 1
+        }
+        
+        // Animation du bouton
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.9)) {
+            buttonScale = 1
+            buttonOpacity = 1
+        }
     }
     
     var body: some View {
@@ -35,8 +74,7 @@ struct PokemonDetailView: View {
                             .bold()
                             .foregroundColor(.white)
                             .shadow(radius: 5)
-                            .opacity(opacity)  // Animation de fade
-                            .offset(y: offset) // Animation de slide
+                            .opacity(titleOpacity)
                         
                         AsyncImage(url: URL(string: pokemon.image)) { image in
                             image.resizable()
@@ -47,15 +85,14 @@ struct PokemonDetailView: View {
                         .clipShape(Circle())
                         .padding()
                         .background(Circle().fill(Color.white.opacity(0.3)))
-                        .scaleEffect(scale)
+                        .scaleEffect(imageScale)
+                        .opacity(imageOpacity)
                         .shadow(radius: 10)
-                        .opacity(opacity)  // Animation de fade
-                        .offset(y: offset) // Animation de slide
                         .gesture(
                             TapGesture()
                                 .onEnded {
                                     withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
-                                        scale = scale == 1.0 ? 1.3 : 1.0
+                                        scale = scale == 1.0 ? 1.9 : 1.0
                                     }
                                 }
                         )
@@ -70,8 +107,8 @@ struct PokemonDetailView: View {
                                     .cornerRadius(15)
                             }
                         }
-                        .opacity(opacity)  // Animation de fade
-                        .offset(y: offset) // Animation de slide
+                        .offset(y: typesOffset)
+                        .opacity(typesOpacity)
                         
                         VStack(alignment: .leading, spacing: 10) {
                             StatBar(label: "HP", value: pokemon.stats.hp, color: .green)
@@ -83,8 +120,8 @@ struct PokemonDetailView: View {
                         .background(Color.white.opacity(0.2))
                         .cornerRadius(15)
                         .padding(.horizontal)
-                        .opacity(opacity)  // Animation de fade
-                        .offset(y: offset) // Animation de slide
+                        .offset(y: statsOffset)
+                        .opacity(statsOpacity)
                         
                         Button(action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -105,9 +142,9 @@ struct PokemonDetailView: View {
                             .cornerRadius(12)
                             .shadow(radius: 5)
                         }
+                        .scaleEffect(buttonScale)
+                        .opacity(buttonOpacity)
                         .padding(.horizontal)
-                        .opacity(opacity)  // Animation de fade
-                        .offset(y: offset) // Animation de slide
                     }
                     .padding()
                 }
@@ -115,11 +152,7 @@ struct PokemonDetailView: View {
             .navigationTitle(pokemon.name.capitalized)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                // Animation d'entrée
-                withAnimation(.easeOut(duration: 0.8)) {
-                    opacity = 1
-                    offset = 0
-                }
+                startAnimations()
             }
         } else {
             EmptyView()

@@ -3,43 +3,44 @@ import CoreData
 
 struct ContentView: View {
     @StateObject private var viewModel = PokemonViewModel()
-    @State private var searchText = "" // Pour la recherche par nom
-    @State private var selectedType: String? = nil // Pour le filtre par type
-    @State private var sortOption: SortOption = .alphabetical // Pour le tri
+    @State private var searchText = ""
+    @State private var selectedType: String? = nil
+    @State private var sortOption: SortOption = .alphabetical
     @State private var isSheetPresented = false
-    @State private var selectedPokemon: Pokemon? = nil // Pokémon sélectionné pour afficher la Sheet
-    @State private var showOnlyFavorites: Bool = false // Afficher uniquement les favoris
+    @State private var selectedPokemon: Pokemon? = nil
+    @State private var showOnlyFavorites: Bool = false
     @AppStorage("isDarkMode") private var isDarkMode = false
-
-    // Enums pour le tri
+    
+    // États pour les animations
+    @State private var searchBarOffset: CGFloat = -50
+    @State private var searchBarOpacity: Double = 0
+    @State private var filtersScale: CGFloat = 0.8
+    @State private var filtersOpacity: Double = 0
+    @State private var listOpacity: Double = 0
+    @State private var combatButtonOffset: CGFloat = 100
+    @State private var combatButtonOpacity: Double = 0
+    
     enum SortOption {
-        case alphabetical
-        case attack
-        case defense
-        case speed
+        case alphabetical, attack, defense, speed
     }
     
     var filteredAndSortedPokemons: [Pokemon] {
         var filteredPokemons = viewModel.pokemons
         
-        // Filtrer par nom
         if !searchText.isEmpty {
             filteredPokemons = filteredPokemons.filter { $0.name.lowercased().contains(searchText.lowercased()) }
         }
         
-        // Filtrer par type
         if let selectedType = selectedType {
             filteredPokemons = filteredPokemons.filter { pokemon in
                 pokemon.types.contains(selectedType)
             }
         }
         
-        // Filtrer les favoris si nécessaire
         if showOnlyFavorites {
             filteredPokemons = filteredPokemons.filter { $0.isFavorite }
         }
         
-        // Trier
         switch sortOption {
         case .alphabetical:
             filteredPokemons.sort { $0.name.lowercased() < $1.name.lowercased() }
@@ -53,87 +54,171 @@ struct ContentView: View {
         
         return filteredPokemons
     }
+    
+    private func startAnimations() {
+        // Animation de la barre de recherche
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            searchBarOffset = 0
+            searchBarOpacity = 1
+        }
+        
+        // Animation des filtres
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2)) {
+            filtersScale = 1
+            filtersOpacity = 1
+        }
+        
+        // Animation de la liste
+        withAnimation(.easeOut(duration: 0.6).delay(0.4)) {
+            listOpacity = 1
+        }
+        
+        // Animation du bouton combat
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.6)) {
+            combatButtonOffset = 0
+            combatButtonOpacity = 1
+        }
+    }
 
     var body: some View {
         NavigationView {
-            VStack {
-                // Barre de recherche
-                TextField("Rechercher par nom", text: $searchText)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            ZStack {
+                // Gradient de fond
+                LinearGradient(gradient: Gradient(colors: [
+                    isDarkMode ? Color.black : Color.blue.opacity(0.1),
+                    isDarkMode ? Color.gray.opacity(0.3) : Color.white
+                ]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    .edgesIgnoringSafeArea(.all)
                 
-                // Filtre par type
-                Picker("Filtrer par type", selection: $selectedType) {
-                    Text("Tous").tag(nil as String?)
-                    Text("Feu").tag("fire")
-                    Text("Eau").tag("water")
-                    Text("Plante").tag("grass")
-                }
-                .pickerStyle(MenuPickerStyle())
-                
-                // Options de tri
-                Picker("Trier par", selection: $sortOption) {
-                    Text("Alphabétique").tag(SortOption.alphabetical)
-                    Text("Attaque").tag(SortOption.attack)
-                    Text("Défense").tag(SortOption.defense)
-                    Text("Vitesse").tag(SortOption.speed)
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding()
-                
-                // Option pour afficher uniquement les favoris
-                Toggle("Afficher les favoris seulement", isOn: $showOnlyFavorites)
-                    .padding()
-                
-                // Liste des Pokémon
-                List(filteredAndSortedPokemons, id: \.id) { pokemon in
+                VStack(spacing: 16) {
+                    // Barre de recherche stylisée
                     HStack {
-                        AsyncImage(url: URL(string: pokemon.image)) { image in
-                            image.resizable()
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(width: 50, height: 50)
-                        .clipShape(Circle())
-                        
-                        Text(pokemon.name.capitalized)
-                            .font(.headline)
-                        
-                        Spacer()
-                        
-                        // Bouton de favori avec le cœur
-                        Button(action: {
-                            toggleFavorite(pokemon: pokemon)  // Appel de toggleFavorite ici
-                        }) {
-                            Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
-                                .foregroundColor(pokemon.isFavorite ? .red : .gray)
-                        }
-                        .buttonStyle(PlainButtonStyle())  // Utiliser PlainButtonStyle pour éviter les effets visuels par défaut du bouton
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                        TextField("Rechercher par nom", text: $searchText)
                     }
-                    .onTapGesture {
-                        selectedPokemon = pokemon
-                        isSheetPresented.toggle()
+                    .padding()
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(radius: 3)
+                    .padding(.horizontal)
+                    .offset(y: searchBarOffset)
+                    .opacity(searchBarOpacity)
+                    
+                    // Section des filtres
+                    VStack(spacing: 12) {
+                        // Filtre par type
+                        Picker("Filtrer par type", selection: $selectedType) {
+                            Text("Tous").tag(nil as String?)
+                            Text("Feu").tag("fire")
+                            Text("Eau").tag("water")
+                            Text("Plante").tag("grass")
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .padding(.horizontal)
+                        
+                        // Options de tri
+                        Picker("Trier par", selection: $sortOption) {
+                            Text("A-Z").tag(SortOption.alphabetical)
+                            Text("ATK").tag(SortOption.attack)
+                            Text("DEF").tag(SortOption.defense)
+                            Text("VIT").tag(SortOption.speed)
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        
+                        // Toggle favoris
+                        Toggle("Favoris uniquement", isOn: $showOnlyFavorites)
+                            .padding(.horizontal)
                     }
-                }
-
-                
-                // Bouton mode combat
-                NavigationLink(destination: CombatView()) {
-                    Text("Mode Combat")
+                    .scaleEffect(filtersScale)
+                    .opacity(filtersOpacity)
+                    
+                    // Liste des Pokémon
+                    List(filteredAndSortedPokemons, id: \.id) { pokemon in
+                        HStack(spacing: 15) {
+                            // Image du Pokémon
+                            AsyncImage(url: URL(string: pokemon.image)) { image in
+                                image.resizable()
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(width: 60, height: 60)
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
+                            .padding(.vertical, 5)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(pokemon.name.capitalized)
+                                    .font(.headline)
+                                
+                                // Types
+                                HStack {
+                                    ForEach(pokemon.types.split(separator: ","), id: \.self) { type in
+                                        Text(String(type).capitalized)
+                                            .font(.caption)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(typeColor(for: String(type)))
+                                            .foregroundColor(.white)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            // Bouton favori
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                    toggleFavorite(pokemon: pokemon)
+                                }
+                            }) {
+                                Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
+                                    .font(.title2)
+                                    .foregroundColor(pokemon.isFavorite ? .red : .gray)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedPokemon = pokemon
+                            isSheetPresented.toggle()
+                        }
+                    }
+                    .listStyle(PlainListStyle())
+                    .opacity(listOpacity)
+                    
+                    // Bouton mode combat
+                    NavigationLink(destination: CombatView()) {
+                        HStack {
+                            Image(systemName: "bolt.fill")
+                            Text("Mode Combat")
+                                .fontWeight(.bold)
+                        }
                         .padding()
+                        .frame(maxWidth: .infinity)
                         .background(Color.blue)
                         .foregroundColor(.white)
-                        .cornerRadius(8)
+                        .cornerRadius(12)
+                        .shadow(radius: 3)
+                        .padding(.horizontal)
+                    }
+                    .offset(y: combatButtonOffset)
+                    .opacity(combatButtonOpacity)
                 }
+                .padding(.vertical)
             }
-            .navigationTitle("Pokémon")
+            .navigationTitle("Pokédex")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        isDarkMode.toggle()
+                        withAnimation {
+                            isDarkMode.toggle()
+                        }
                     }) {
                         Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
-                            .foregroundColor(.primary)
+                            .font(.title3)
+                            .foregroundColor(isDarkMode ? .yellow : .primary)
                     }
                 }
             }
@@ -141,6 +226,7 @@ struct ContentView: View {
             .onAppear {
                 Task {
                     await viewModel.fetchPokemonsWithDetails()
+                    startAnimations()
                 }
             }
             .sheet(isPresented: $isSheetPresented) {
