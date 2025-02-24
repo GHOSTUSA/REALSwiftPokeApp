@@ -13,7 +13,7 @@ struct Pokemon: Identifiable, Equatable {
     var id: Int
     var name: String
     var image: String
-    var types: String // ou un tableau de chaînes, si tu préfères
+    var types: String
     var stats: Stats
     var isFavorite: Bool
     

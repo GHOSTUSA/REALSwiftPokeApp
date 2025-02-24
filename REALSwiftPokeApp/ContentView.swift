@@ -11,7 +11,6 @@ struct ContentView: View {
     @State private var showOnlyFavorites: Bool = false
     @AppStorage("isDarkMode") private var isDarkMode = false
     
-    // États pour les animations
     @State private var searchBarOffset: CGFloat = -50
     @State private var searchBarOpacity: Double = 0
     @State private var filtersScale: CGFloat = 0.8
@@ -24,6 +23,12 @@ struct ContentView: View {
         case alphabetical, attack, defense, speed
     }
     
+    private let pokemonTypes = [
+        "fire", "water", "grass", "electric", "ground", "rock",
+        "flying", "psychic", "fighting", "poison", "bug", "ice",
+        "dragon", "ghost", "steel", "fairy", "normal"
+    ]
+    
     var filteredAndSortedPokemons: [Pokemon] {
         var filteredPokemons = viewModel.pokemons
         
@@ -33,7 +38,10 @@ struct ContentView: View {
         
         if let selectedType = selectedType {
             filteredPokemons = filteredPokemons.filter { pokemon in
-                pokemon.types.contains(selectedType)
+                let types = pokemon.types
+                    .split(separator: ",")
+                    .map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
+                return types.contains(selectedType.lowercased())
             }
         }
         
@@ -56,42 +64,58 @@ struct ContentView: View {
     }
     
     private func startAnimations() {
-        // Animation de la barre de recherche
         withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
             searchBarOffset = 0
             searchBarOpacity = 1
         }
         
-        // Animation des filtres
         withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2)) {
             filtersScale = 1
             filtersOpacity = 1
         }
         
-        // Animation de la liste
         withAnimation(.easeOut(duration: 0.6).delay(0.4)) {
             listOpacity = 1
         }
         
-        // Animation du bouton combat
         withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.6)) {
             combatButtonOffset = 0
             combatButtonOpacity = 1
+        }
+    }
+    
+    private func typeColor(for type: String) -> Color {
+        switch type.trimmingCharacters(in: .whitespaces).lowercased() {
+        case "fire": return .red
+        case "water": return .blue
+        case "grass": return .green
+        case "electric": return .yellow
+        case "ground": return .brown
+        case "rock": return .gray
+        case "flying": return .cyan
+        case "psychic": return .purple
+        case "fighting": return .orange
+        case "poison": return .purple
+        case "bug": return .green
+        case "ice": return .blue
+        case "dragon": return .purple
+        case "ghost": return .purple
+        case "steel": return .gray
+        case "fairy": return .pink
+        default: return .gray
         }
     }
 
     var body: some View {
         NavigationView {
             ZStack {
-                // Gradient de fond
                 LinearGradient(gradient: Gradient(colors: [
                     isDarkMode ? Color.black : Color.blue.opacity(0.1),
                     isDarkMode ? Color.gray.opacity(0.3) : Color.white
                 ]), startPoint: .topLeading, endPoint: .bottomTrailing)
-                    .edgesIgnoringSafeArea(.all)
+                .edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 16) {
-                    // Barre de recherche stylisée
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
@@ -104,20 +128,21 @@ struct ContentView: View {
                     .padding(.horizontal)
                     .offset(y: searchBarOffset)
                     .opacity(searchBarOpacity)
-                    
-                    // Section des filtres
+
                     VStack(spacing: 12) {
-                        // Filtre par type
                         Picker("Filtrer par type", selection: $selectedType) {
                             Text("Tous").tag(nil as String?)
-                            Text("Feu").tag("fire")
-                            Text("Eau").tag("water")
-                            Text("Plante").tag("grass")
+                            ForEach(pokemonTypes, id: \.self) { type in
+                                Text(type.capitalized).tag(type as String?)
+                            }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .pickerStyle(MenuPickerStyle())
                         .padding(.horizontal)
+                        .onChange(of: selectedType) { _ in
+                            withAnimation {
+                            }
+                        }
                         
-                        // Options de tri
                         Picker("Trier par", selection: $sortOption) {
                             Text("A-Z").tag(SortOption.alphabetical)
                             Text("ATK").tag(SortOption.attack)
@@ -125,18 +150,16 @@ struct ContentView: View {
                             Text("VIT").tag(SortOption.speed)
                         }
                         .pickerStyle(SegmentedPickerStyle())
+                        .padding(.horizontal)
                         
-                        // Toggle favoris
                         Toggle("Favoris uniquement", isOn: $showOnlyFavorites)
                             .padding(.horizontal)
                     }
                     .scaleEffect(filtersScale)
                     .opacity(filtersOpacity)
-                    
-                    // Liste des Pokémon
+
                     List(filteredAndSortedPokemons, id: \.id) { pokemon in
                         HStack(spacing: 15) {
-                            // Image du Pokémon
                             AsyncImage(url: URL(string: pokemon.image)) { image in
                                 image.resizable()
                             } placeholder: {
@@ -151,7 +174,6 @@ struct ContentView: View {
                                 Text(pokemon.name.capitalized)
                                     .font(.headline)
                                 
-                                // Types
                                 HStack {
                                     ForEach(pokemon.types.split(separator: ","), id: \.self) { type in
                                         Text(String(type).capitalized)
@@ -167,7 +189,6 @@ struct ContentView: View {
                             
                             Spacer()
                             
-                            // Bouton favori
                             Button(action: {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                                     toggleFavorite(pokemon: pokemon)
@@ -188,7 +209,6 @@ struct ContentView: View {
                     .listStyle(PlainListStyle())
                     .opacity(listOpacity)
                     
-                    // Bouton mode combat
                     NavigationLink(destination: CombatView()) {
                         HStack {
                             Image(systemName: "bolt.fill")

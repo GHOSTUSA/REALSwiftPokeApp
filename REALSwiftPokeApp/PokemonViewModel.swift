@@ -1,7 +1,6 @@
 import CoreData
 import Foundation
 
-// Modèles inchangés...
 struct PokemonListResponse: Codable {
     let results: [PokemonEntry]
 }
@@ -9,7 +8,7 @@ struct PokemonListResponse: Codable {
 struct PokemonDetail: Codable {
     let types: [PokemonType]
     let stats: [PokemonStat]
-    let id: Int // Ajout de l'ID dans le modèle
+    let id: Int
 }
 
 struct PokemonType: Codable {
@@ -34,7 +33,7 @@ struct PokemonStatName: Codable {
     let name: String
 }
 
-@MainActor // Assure que toutes les mises à jour de @Published sont sur le thread principal
+@MainActor
 class PokemonViewModel: ObservableObject {
     @Published var pokemons: [Pokemon] = []
     let context = PersistenceController.shared.container.viewContext
@@ -66,23 +65,20 @@ class PokemonViewModel: ObservableObject {
 
                 for await pokemon in group {
                     if let pokemon = pokemon,
-                       pokemon.id > 0, // Vérifie que l'ID est valide
-                       !seenPokemonIDs.contains(pokemon.id) {
+                       pokemon.id > 0,      
+                        !seenPokemonIDs.contains(pokemon.id) {
                         seenPokemonIDs.insert(pokemon.id)
                         uniquePokemons.append(pokemon)
                     }
                 }
             }
 
-            // Trier et filtrer les Pokémon
             uniquePokemons = uniquePokemons
-                .filter { $0.id > 0 && $0.id <= 151 } // Assure qu'on a que les 151 premiers
+                .filter { $0.id > 0 && $0.id <= 151 }
                 .sorted { $0.id < $1.id }
 
-            // Mise à jour sur le thread principal
             self.pokemons = uniquePokemons
             
-            // Sauvegarde dans CoreData
             await saveToCoreData(pokemons: uniquePokemons)
 
         } catch {
@@ -97,11 +93,10 @@ class PokemonViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: url)
             let pokemonDetail = try JSONDecoder().decode(PokemonDetail.self, from: data)
             
-            // Vérification de l'ID
             guard pokemonDetail.id > 0 && pokemonDetail.id <= 151 else { return nil }
 
             let pokemon = Pokemon(
-                id: pokemonDetail.id, // Utilise l'ID de l'API
+                id: pokemonDetail.id,
                 name: entry.name,
                 image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(pokemonDetail.id).png",
                 types: pokemonDetail.types.map { $0.type.name }.joined(separator: ","),
@@ -123,14 +118,12 @@ class PokemonViewModel: ObservableObject {
 
     private func saveToCoreData(pokemons: [Pokemon]) async {
         await MainActor.run {
-            // Nettoyer les données existantes
             let fetchRequest: NSFetchRequest<NSFetchRequestResult> = PokemonEntity.fetchRequest()
             let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
             
             do {
                 try context.execute(deleteRequest)
                 
-                // Sauvegarder les nouvelles données
                 for pokemon in pokemons {
                     let entity = PokemonEntity(context: context)
                     entity.id = Int64(pokemon.id)
@@ -161,7 +154,7 @@ class PokemonViewModel: ObservableObject {
             guard !results.isEmpty else { return false }
             
             let loadedPokemons = results
-                .filter { $0.id > 0 && $0.id <= 151 } // Filtre les IDs invalides
+                .filter { $0.id > 0 && $0.id <= 151 }
                 .map { entity in
                     Pokemon(
                         id: Int(entity.id),
@@ -191,7 +184,6 @@ class PokemonViewModel: ObservableObject {
         if let index = pokemons.firstIndex(where: { $0.id == pokemon.id }) {
             pokemons[index].isFavorite.toggle()
 
-            // Mise à jour dans Core Data
             let request: NSFetchRequest<PokemonEntity> = PokemonEntity.fetchRequest()
             request.predicate = NSPredicate(format: "id == %d", pokemon.id)
             

@@ -7,8 +7,6 @@ struct CombatView: View {
     @State private var randomOpponent: Pokemon? = nil
     @State private var combatResult: String = ""
     @State private var showFavoritesOnly: Bool = false
-    
-    // États pour les animations
     @State private var selectedPokemonOffset: CGFloat = -100
     @State private var selectedPokemonOpacity: Double = 0
     @State private var opponentOffset: CGFloat = 100
@@ -20,7 +18,6 @@ struct CombatView: View {
     @State private var buttonOffset: CGFloat = 50
     @State private var buttonOpacity: Double = 0
     
-    // Animation du combat
     @State private var isAnimatingCombat: Bool = false
     @State private var pokemonScale: CGFloat = 1.0
     
@@ -55,7 +52,6 @@ struct CombatView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 20) {
-                // Section du Pokémon sélectionné
                 if let selectedPokemon = selectedPokemon {
                     VStack(spacing: 15) {
                         Text("Votre Pokémon")
@@ -100,7 +96,6 @@ struct CombatView: View {
                     .opacity(selectedPokemonOpacity)
                 }
                 
-                // Section de l'adversaire
                 if let opponent = randomOpponent {
                     VStack(spacing: 15) {
                         Text("Adversaire")
@@ -145,7 +140,6 @@ struct CombatView: View {
                     .opacity(opponentOpacity)
                 }
                 
-                // Section de sélection des Pokémon
                 VStack {
                     Toggle(isOn: $showFavoritesOnly) {
                         HStack {
@@ -173,14 +167,7 @@ struct CombatView: View {
                             
                             Spacer()
                             
-                            Button(action: {
-                                withAnimation {
-                                    toggleFavorite(pokemon: pokemon)
-                                }
-                            }) {
-                                Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
-                                    .foregroundColor(pokemon.isFavorite ? .red : .gray)
-                            }
+                        
                         }
                         .padding(.vertical, 5)
                         .contentShape(Rectangle())
@@ -195,7 +182,6 @@ struct CombatView: View {
                 .scaleEffect(listScale)
                 .opacity(listOpacity)
                 
-                // Résultat du combat
                 if !combatResult.isEmpty {
                     Text(combatResult)
                         .font(.title2)
@@ -208,7 +194,6 @@ struct CombatView: View {
                         .opacity(resultOpacity)
                 }
                 
-                // Bouton de combat
                 if selectedPokemon != nil {
                     Button(action: {
                         withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
@@ -216,7 +201,6 @@ struct CombatView: View {
                             startCombat()
                         }
                         
-                        // Réinitialiser l'animation après un délai
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                             withAnimation {
                                 isAnimatingCombat = false
@@ -260,10 +244,6 @@ struct CombatView: View {
         }
     }
     
-    private func toggleFavorite(pokemon: Pokemon) {
-        viewModel.toggleFavorite(pokemon: pokemon)
-    }
-    
     private func startCombat() {
         guard let selectedPokemon = selectedPokemon else { return }
         randomOpponent = viewModel.pokemons.randomElement()
@@ -271,7 +251,6 @@ struct CombatView: View {
         if let opponent = randomOpponent {
             let winner = battleResult(player: selectedPokemon, opponent: opponent)
             
-            // Animation du résultat
             withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                 combatResult = "\(winner.name.capitalized) remporte le combat!"
                 resultScale = 1

@@ -6,8 +6,6 @@ struct PokemonDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject private var viewModel: PokemonViewModel
     @State private var scale: CGFloat = 1.0
-    
-    // États pour les animations
     @State private var titleOpacity: Double = 0
     @State private var imageScale: CGFloat = 0.5
     @State private var imageOpacity: Double = 0
@@ -25,34 +23,48 @@ struct PokemonDetailView: View {
     
     private func toggleFavorite() {
         guard let pokemon = pokemon else { return }
+
+        // Mise à jour de la valeur du favori dans l'objet Pokémon
         viewModel.toggleFavorite(pokemon: pokemon)
+        
+        // Vérifier si le Pokémon existe dans CoreData
+        let fetchRequest: NSFetchRequest<PokemonEntity> = PokemonEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %d", pokemon.id)
+
+        do {
+            // Chercher l'entité CoreData correspondant à ce Pokémon
+            let results = try viewContext.fetch(fetchRequest)
+            if let entity = results.first {
+                // Mettre à jour la valeur de 'isFavorite' dans Core Data
+                entity.isFavorite = pokemon.isFavorite
+                try viewContext.save() // Sauvegarder dans Core Data
+            }
+        } catch {
+            print("Erreur lors de la mise à jour du favori dans Core Data: \(error)")
+        }
     }
+
     
     private func startAnimations() {
-        // Animation du titre
         withAnimation(.easeOut(duration: 0.6)) {
             titleOpacity = 1
         }
         
-        // Animation de l'image
         withAnimation(.spring(response: 0.8, dampingFraction: 0.6).delay(0.3)) {
             imageScale = 1.0
             imageOpacity = 1
         }
-        
-        // Animation des types
+  
         withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.5)) {
             typesOffset = 0
             typesOpacity = 1
         }
-        
-        // Animation des stats
+
         withAnimation(.spring(response: 0.7, dampingFraction: 0.8).delay(0.7)) {
             statsOffset = 0
             statsOpacity = 1
         }
-        
-        // Animation du bouton
+
         withAnimation(.spring(response: 0.6, dampingFraction: 0.6).delay(0.9)) {
             buttonScale = 1
             buttonOpacity = 1
@@ -125,7 +137,7 @@ struct PokemonDetailView: View {
                         
                         Button(action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                toggleFavorite()
+                                toggleFavorite() // Mettre à jour l'état du favori
                             }
                         }) {
                             HStack {
@@ -145,6 +157,13 @@ struct PokemonDetailView: View {
                         .scaleEffect(buttonScale)
                         .opacity(buttonOpacity)
                         .padding(.horizontal)
+                        .onChange(of: pokemon.isFavorite) { newValue in
+                            withAnimation {
+                                // Force le rafraîchissement de l'interface après le changement
+                                buttonScale = 1.0
+                                buttonOpacity = 1.0
+                            }
+                        }
                     }
                     .padding()
                 }
@@ -160,9 +179,6 @@ struct PokemonDetailView: View {
     }
 }
 
-// Les autres structures restent identiques...
-
-// Composant pour afficher les barres de stats
 struct StatBar: View {
     var label: String
     var value: Int64
@@ -181,7 +197,7 @@ struct StatBar: View {
                         .foregroundColor(Color.white.opacity(0.3))
                     
                     RoundedRectangle(cornerRadius: 10)
-                        .frame(width: min(CGFloat(value) / 100.0 * geometry.size.width, geometry.size.width),
+                        .frame(width: min(CGFloat(value) / 255.0 * geometry.size.width, geometry.size.width),
                                height: 10)
                         .foregroundColor(color)
                         .animation(.easeInOut(duration: 0.8), value: value)
@@ -192,7 +208,6 @@ struct StatBar: View {
     }
 }
 
-// Fonction pour récupérer la couleur du type de Pokémon
 func typeColor(for type: String) -> Color {
     switch type.lowercased() {
     case "fire": return Color.red
@@ -216,7 +231,6 @@ func typeColor(for type: String) -> Color {
     }
 }
 
-// Fonction pour obtenir une couleur de fond en fonction du type
 func backgroundColors(for types: String) -> [Color] {
     let typeList = types.split(separator: ",").map { String($0) }
     let colors = typeList.map { typeColor(for: $0) }

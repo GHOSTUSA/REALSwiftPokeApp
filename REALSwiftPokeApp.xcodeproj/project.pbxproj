@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		171511E72D6C7D08006367D0 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 171511E62D6C7D08006367D0 /* README.md */; };
 		177EADE42D631DB000308A76 /* REALSwiftPokeAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */; };
 		177EADE62D631DB000308A76 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177EADE52D631DB000308A76 /* ContentView.swift */; };
 		177EADE82D631DB100308A76 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 177EADE72D631DB100308A76 /* Assets.xcassets */; };
@@ -22,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		171511E62D6C7D08006367D0 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		177EADE02D631DB000308A76 /* REALSwiftPokeApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = REALSwiftPokeApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = REALSwiftPokeAppApp.swift; sourceTree = "<group>"; };
 		177EADE52D631DB000308A76 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -52,6 +54,7 @@
 		177EADD72D631DAF00308A76 = {
 			isa = PBXGroup;
 			children = (
+				171511E62D6C7D08006367D0 /* README.md */,
 				177EADFF2D632BAD00308A76 /*  PokemonModel.xcdatamodeld */,
 				177EADE22D631DB000308A76 /* REALSwiftPokeApp */,
 				177EADE12D631DB000308A76 /* Products */,
@@ -71,8 +74,8 @@
 			children = (
 				177EADF82D63257100308A76 /* Info.plist */,
 				177EADE32D631DB000308A76 /* REALSwiftPokeAppApp.swift */,
-				177EAE022D633BF200308A76 /* PokemonDetailView.swift */,
 				177EADFB2D63288500308A76 /* PokemonViewModel.swift */,
+				177EAE022D633BF200308A76 /* PokemonDetailView.swift */,
 				177EAE062D63783700308A76 /* CombatView.swift */,
 				177EADE52D631DB000308A76 /* ContentView.swift */,
 				177EADF92D6327FA00308A76 /* PokemonEntity.swift */,
@@ -154,6 +157,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				171511E72D6C7D08006367D0 /* README.md in Resources */,
 				177EADEB2D631DB100308A76 /* Preview Assets.xcassets in Resources */,
 				177EADE82D631DB100308A76 /* Assets.xcassets in Resources */,
 			);
