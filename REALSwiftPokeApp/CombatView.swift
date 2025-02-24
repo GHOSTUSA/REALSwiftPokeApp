@@ -55,7 +55,9 @@ struct CombatView: View {
                                 Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
                                     .foregroundColor(pokemon.isFavorite ? .red : .gray)
                             }
+                            .buttonStyle(PlainButtonStyle()) // Désactive l'effet du bouton pour éviter la propagation du geste
                         }
+                        .contentShape(Rectangle()) // Agrandit la zone tactile du HStack sans inclure le bouton
                         .onTapGesture {
                             selectedPokemon = pokemon
                         }
@@ -98,10 +100,9 @@ struct CombatView: View {
     }
     
     private func toggleFavorite(pokemon: Pokemon) {
-        if let index = viewModel.pokemons.firstIndex(where: { $0.id == pokemon.id }) {
-            viewModel.pokemons[index].isFavorite.toggle() // Inverse l'état de favori
-        }
+        viewModel.toggleFavorite(pokemon: pokemon)
     }
+
     
     private func startCombat() {
         guard let selectedPokemon = selectedPokemon else { return }
