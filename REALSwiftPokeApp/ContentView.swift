@@ -55,97 +55,103 @@ struct ContentView: View {
     }
 
     var body: some View {
-            NavigationView {
-                VStack {
-                    // Barre de recherche
-                    TextField("Rechercher par nom", text: $searchText)
-                        .padding()
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    // Filtre par type
-                    Picker("Filtrer par type", selection: $selectedType) {
-                        Text("Tous").tag(nil as String?)
-                        Text("Feu").tag("fire")
-                        Text("Eau").tag("water")
-                        Text("Plante").tag("grass")
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    
-                    // Options de tri
-                    Picker("Trier par", selection: $sortOption) {
-                        Text("Alphabétique").tag(SortOption.alphabetical)
-                        Text("Attaque").tag(SortOption.attack)
-                        Text("Défense").tag(SortOption.defense)
-                        Text("Vitesse").tag(SortOption.speed)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
+        NavigationView {
+            VStack {
+                // Barre de recherche
+                TextField("Rechercher par nom", text: $searchText)
                     .padding()
-                    
-                    // Option pour afficher uniquement les favoris
-                    Toggle("Afficher les favoris seulement", isOn: $showOnlyFavorites)
-                        .padding()
-                    
-                    // Liste des Pokémon
-                    List(viewModel.pokemons, id: \.id) { pokemon in
-                        HStack {
-                            AsyncImage(url: URL(string: pokemon.image)) { image in
-                                image.resizable()
-                            } placeholder: {
-                                ProgressView()
-                            }
-                            .frame(width: 50, height: 50)
-                            .clipShape(Circle())
-                            
-                            Text(pokemon.name.capitalized)
-                                .font(.headline)
-                            
-                            Spacer()
-                            
-                            // Bouton de favori
-                            Button(action: {
-                                toggleFavorite(pokemon: pokemon)
-                            }) {
-                                Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
-                                    .foregroundColor(pokemon.isFavorite ? .red : .gray)
-                            }
-                        }
-                        .onTapGesture {
-                            selectedPokemon = pokemon
-                            isSheetPresented.toggle()
-                        }
-                    }
-                    
-                    // Bouton mode combat
-                    NavigationLink(destination: CombatView()) {
-                        Text("Mode Combat")
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                // Filtre par type
+                Picker("Filtrer par type", selection: $selectedType) {
+                    Text("Tous").tag(nil as String?)
+                    Text("Feu").tag("fire")
+                    Text("Eau").tag("water")
+                    Text("Plante").tag("grass")
                 }
-                .navigationTitle("Pokémon")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                .pickerStyle(MenuPickerStyle())
+                
+                // Options de tri
+                Picker("Trier par", selection: $sortOption) {
+                    Text("Alphabétique").tag(SortOption.alphabetical)
+                    Text("Attaque").tag(SortOption.attack)
+                    Text("Défense").tag(SortOption.defense)
+                    Text("Vitesse").tag(SortOption.speed)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+                
+                // Option pour afficher uniquement les favoris
+                Toggle("Afficher les favoris seulement", isOn: $showOnlyFavorites)
+                    .padding()
+                
+                // Liste des Pokémon
+                List(filteredAndSortedPokemons, id: \.id) { pokemon in
+                    HStack {
+                        AsyncImage(url: URL(string: pokemon.image)) { image in
+                            image.resizable()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        
+                        Text(pokemon.name.capitalized)
+                            .font(.headline)
+                        
+                        Spacer()
+                        
+                        // Bouton de favori avec le cœur
                         Button(action: {
-                            isDarkMode.toggle()
+                            toggleFavorite(pokemon: pokemon)  // Appel de toggleFavorite ici
                         }) {
-                            Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
-                                .foregroundColor(.primary)
+                            Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
+                                .foregroundColor(pokemon.isFavorite ? .red : .gray)
                         }
+                        .buttonStyle(PlainButtonStyle())  // Utiliser PlainButtonStyle pour éviter les effets visuels par défaut du bouton
+                    }
+                    .onTapGesture {
+                        selectedPokemon = pokemon
+                        isSheetPresented.toggle()
                     }
                 }
-                .preferredColorScheme(isDarkMode ? .dark : .light)
-                .onAppear {
-                    Task {
-                        await viewModel.fetchPokemonsWithDetails()
+
+                
+                // Bouton mode combat
+                NavigationLink(destination: CombatView()) {
+                    Text("Mode Combat")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+            }
+            .navigationTitle("Pokémon")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        isDarkMode.toggle()
+                    }) {
+                        Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                            .foregroundColor(.primary)
                     }
                 }
             }
+            .preferredColorScheme(isDarkMode ? .dark : .light)
+            .onAppear {
+                Task {
+                    await viewModel.fetchPokemonsWithDetails()
+                }
+            }
+            .sheet(isPresented: $isSheetPresented) {
+                if let pokemon = selectedPokemon {
+                    PokemonDetailView(pokemon: .constant(selectedPokemon), viewModel: viewModel)
+                }
+            }
         }
+    }
     
     private func toggleFavorite(pokemon: Pokemon) {
         viewModel.toggleFavorite(pokemon: pokemon)
     }
 }
-

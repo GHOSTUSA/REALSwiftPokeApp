@@ -1,15 +1,15 @@
 import CoreData
 import Foundation
 
-// Modèle pour la réponse de la liste des Pokémon
+// Modèles inchangés...
 struct PokemonListResponse: Codable {
     let results: [PokemonEntry]
 }
 
-// Modèle détaillé pour un Pokémon
 struct PokemonDetail: Codable {
     let types: [PokemonType]
     let stats: [PokemonStat]
+    let id: Int // Ajout de l'ID dans le modèle
 }
 
 struct PokemonType: Codable {
@@ -34,17 +34,16 @@ struct PokemonStatName: Codable {
     let name: String
 }
 
+@MainActor // Assure que toutes les mises à jour de @Published sont sur le thread principal
 class PokemonViewModel: ObservableObject {
     @Published var pokemons: [Pokemon] = []
     let context = PersistenceController.shared.container.viewContext
     
     func fetchPokemonsWithDetails() async {
-        //clearCoreData() // Vider CoreData au démarrage
-            
-            if loadFromCoreData() {
-                print("Données chargées depuis CoreData")
-                return
-            }
+        if loadFromCoreData() {
+            print("Données chargées depuis CoreData")
+            return
+        }
 
         guard let url = URL(string: "https://pokeapi.co/api/v2/pokemon?limit=151") else {
             print("URL invalide")
@@ -54,9 +53,7 @@ class PokemonViewModel: ObservableObject {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let decodedResponse = try JSONDecoder().decode(PokemonListResponse.self, from: data)
-            print("Nombre de Pokémon dans la réponse API: \(decodedResponse.results.count)")
-
-            // Utiliser un set pour éviter les doublons
+            
             var uniquePokemons: [Pokemon] = []
             var seenPokemonIDs = Set<Int>()
 
@@ -68,83 +65,90 @@ class PokemonViewModel: ObservableObject {
                 }
 
                 for await pokemon in group {
-                    if let pokemon = pokemon, !seenPokemonIDs.contains(pokemon.id) {
-                        seenPokemonIDs.insert(pokemon.id) // Marque cet ID comme ajouté
+                    if let pokemon = pokemon,
+                       pokemon.id > 0, // Vérifie que l'ID est valide
+                       !seenPokemonIDs.contains(pokemon.id) {
+                        seenPokemonIDs.insert(pokemon.id)
                         uniquePokemons.append(pokemon)
                     }
                 }
             }
 
-            // Trier par ID pour assurer l'ordre correct
-            uniquePokemons.sort { $0.id < $1.id }
+            // Trier et filtrer les Pokémon
+            uniquePokemons = uniquePokemons
+                .filter { $0.id > 0 && $0.id <= 151 } // Assure qu'on a que les 151 premiers
+                .sorted { $0.id < $1.id }
 
-            print("Nombre de Pokémon uniques récupérés: \(uniquePokemons.count)")
-
-            DispatchQueue.main.async {
-                self.pokemons = uniquePokemons
-            }
-
-            // Sauvegarde après la mise à jour
-            saveToCoreData()
-	
+            // Mise à jour sur le thread principal
+            self.pokemons = uniquePokemons
+            
+            // Sauvegarde dans CoreData
+            await saveToCoreData(pokemons: uniquePokemons)
 
         } catch {
             print("Erreur lors de la récupération des Pokémon: \(error)")
         }
     }
 
-
     private func fetchPokemonDetails(for entry: PokemonEntry) async -> Pokemon? {
-        guard let url = URL(string: entry.url) else {
-            print("URL invalide pour \(entry.name)")
-            return nil
-        }
+        guard let url = URL(string: entry.url) else { return nil }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let pokemonDetail = try JSONDecoder().decode(PokemonDetail.self, from: data)
+            
+            // Vérification de l'ID
+            guard pokemonDetail.id > 0 && pokemonDetail.id <= 151 else { return nil }
 
-            let pokemon = entry.toPokemon(with: pokemonDetail)
-
-            if pokemon.id == 0 {
-                print("⚠️ Attention : Pokémon avec ID 0 détecté → \(pokemon.name)")
-            }
+            let pokemon = Pokemon(
+                id: pokemonDetail.id, // Utilise l'ID de l'API
+                name: entry.name,
+                image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/\(pokemonDetail.id).png",
+                types: pokemonDetail.types.map { $0.type.name }.joined(separator: ","),
+                stats: Stats(
+                    hp: pokemonDetail.stats[0].baseStat,
+                    attack: pokemonDetail.stats[1].baseStat,
+                    defense: pokemonDetail.stats[2].baseStat,
+                    speed: pokemonDetail.stats[5].baseStat
+                ),
+                isFavorite: false
+            )
 
             return pokemon
-
         } catch {
             print("Erreur pour \(entry.name): \(error)")
             return nil
         }
     }
 
-
-    private func saveToCoreData() {
-        // Supprimer les anciennes données avant de sauvegarder
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = PokemonEntity.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        
-        do {
-            try context.execute(deleteRequest)
+    private func saveToCoreData(pokemons: [Pokemon]) async {
+        await MainActor.run {
+            // Nettoyer les données existantes
+            let fetchRequest: NSFetchRequest<NSFetchRequestResult> = PokemonEntity.fetchRequest()
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
             
-            // Sauvegarder les nouvelles données
-            for pokemon in pokemons {
-                let entity = PokemonEntity(context: context)
-                entity.id = Int64(pokemon.id)
-                entity.name = pokemon.name
-                entity.image = pokemon.image
-                entity.types = pokemon.types
-                entity.hp = Int64(pokemon.stats.hp)
-                entity.attack = Int64(pokemon.stats.attack)
-                entity.defense = Int64(pokemon.stats.defense)
-                entity.speed = Int64(pokemon.stats.speed)
-                entity.isFavorite = pokemon.isFavorite
+            do {
+                try context.execute(deleteRequest)
+                
+                // Sauvegarder les nouvelles données
+                for pokemon in pokemons {
+                    let entity = PokemonEntity(context: context)
+                    entity.id = Int64(pokemon.id)
+                    entity.name = pokemon.name
+                    entity.image = pokemon.image
+                    entity.types = pokemon.types
+                    entity.hp = Int64(pokemon.stats.hp)
+                    entity.attack = Int64(pokemon.stats.attack)
+                    entity.defense = Int64(pokemon.stats.defense)
+                    entity.speed = Int64(pokemon.stats.speed)
+                    entity.isFavorite = pokemon.isFavorite
+                }
+                
+                try context.save()
+                print("Données sauvegardées dans CoreData avec succès")
+            } catch {
+                print("Erreur lors de la sauvegarde dans CoreData: \(error)")
             }
-            
-            try context.save()
-            print("Données sauvegardées dans CoreData avec succès")
-        } catch {
-            print("Erreur lors de la sauvegarde dans CoreData: \(error)")
         }
     }
 
@@ -154,8 +158,11 @@ class PokemonViewModel: ObservableObject {
         
         do {
             let results = try context.fetch(request)
-            if !results.isEmpty {
-                self.pokemons = results.map { entity in
+            guard !results.isEmpty else { return false }
+            
+            let loadedPokemons = results
+                .filter { $0.id > 0 && $0.id <= 151 } // Filtre les IDs invalides
+                .map { entity in
                     Pokemon(
                         id: Int(entity.id),
                         name: entity.name ?? "Inconnu",
@@ -170,13 +177,14 @@ class PokemonViewModel: ObservableObject {
                         isFavorite: entity.isFavorite
                     )
                 }
-                print("Nombre de Pokémon chargés depuis CoreData: \(self.pokemons.count)")
-                return true
-            }
+            
+            self.pokemons = loadedPokemons
+            print("Nombre de Pokémon chargés depuis CoreData: \(loadedPokemons.count)")
+            return true
         } catch {
             print("Erreur lors du chargement depuis CoreData: \(error)")
+            return false
         }
-        return false
     }
     
     func toggleFavorite(pokemon: Pokemon) {
@@ -198,19 +206,4 @@ class PokemonViewModel: ObservableObject {
             }
         }
     }
-
-    
-    private func clearCoreData() {
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = PokemonEntity.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        
-        do {
-            try context.execute(deleteRequest)
-            try context.save()
-            print("CoreData vidé avec succès")
-        } catch {
-            print("Erreur lors de la suppression des données CoreData: \(error)")
-        }
-    }
-
 }

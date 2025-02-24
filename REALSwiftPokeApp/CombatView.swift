@@ -49,20 +49,22 @@ struct CombatView: View {
                         HStack {
                             Text(pokemon.name.capitalized)
                             Spacer()
+                            
+                            // Bouton de favori avec cœur
                             Button(action: {
-                                toggleFavorite(pokemon: pokemon)
+                                toggleFavorite(pokemon: pokemon) // Appel de toggleFavorite ici
                             }) {
                                 Image(systemName: pokemon.isFavorite ? "heart.fill" : "heart")
                                     .foregroundColor(pokemon.isFavorite ? .red : .gray)
                             }
-                            .buttonStyle(PlainButtonStyle()) // Désactive l'effet du bouton pour éviter la propagation du geste
+                            .buttonStyle(PlainButtonStyle())  // Pour éviter les effets visuels par défaut du bouton
                         }
-                        .contentShape(Rectangle()) // Agrandit la zone tactile du HStack sans inclure le bouton
                         .onTapGesture {
                             selectedPokemon = pokemon
                         }
                     }
                 }
+
                 
                 // Affichage du résultat du combat et bouton pour lancer
                 Spacer()
